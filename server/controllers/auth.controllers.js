@@ -39,6 +39,10 @@ exports.postSignup = (req, res, next) => {
                 req.flash('error', 'E-mail already exists. Please use a different email.');
                 return res.redirect('/signup');
             }
+            if(password !== confirmPassword) {
+                req.flash('error', 'Passwords do not match.');
+                return res.redirect('/signup');
+            }
             return bcrypt
                 .hash(password, 12)
                 .then(hashedPassword => {
