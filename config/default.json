@@ -1,0 +1,5 @@
+{
+    "secret": "superSecret56$$",
+    "mongoURI": "mongodb://localhost/social-media",
+    "MongoClient": "mongodb+srv://PaulLeone:FBl4qsea0vp74VsC@cluster0.yhkd7.mongodb.net/test?authSource=admin&replicaSet=atlas-2jt46z-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true"
+}
