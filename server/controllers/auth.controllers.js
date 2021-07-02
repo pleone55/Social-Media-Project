@@ -69,3 +69,42 @@ exports.postSignup = (req, res, next) => {
             console.log(err);
         });
 };
+
+exports.postLogin = (req, res, next) => {
+    const { email, password } = req.body;
+    User.findOne(email)
+        .then(user => {
+            //Check if user email is valid
+            if(!user) {
+                req.flash('error', 'Invalid email or password.');
+                return res.redirect('/login');
+            }
+            //check if password matches
+            bcrypt
+                .compare(password, user.password)
+                    .then(matches => {
+                        if(matches) {
+                            req.session.isLoggedIn = true;
+                            req.session.user = user;
+                            return req.session.save(err => {
+                                console.log(err);
+                                res.redirect('/dashboard');
+                            });
+                        }
+                        req.flash('error', 'Invalid email or password.');
+                        res.redirect('/login');
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        res.redirect('/login');
+                    });
+        })
+        .catch(err => console.log(err));
+};
+
+exports.postLogout = (req, res, next) => {
+    req.session.destroy(err => {
+        console.log(err);
+        res.redirect('/login');
+    });
+};
