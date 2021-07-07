@@ -61,7 +61,7 @@ exports.postSignup = (req, res, next) => {
                     return user.save();
                 })
                 .then(() => {
-                    console.log(user);
+                    // console.log(user);
                     res.redirect('/login');
                 });
         })

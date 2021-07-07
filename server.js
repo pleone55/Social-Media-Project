@@ -47,7 +47,19 @@ app.use((req, res, next) => {
     }
     User.findById(req.session.user._id)
         .then(user => {
-            req.user = user;
+            req.user = new User(
+                user.firstName, 
+                user.lastName, 
+                user.username, 
+                user.email, 
+                user.password, 
+                user.posts, 
+                user.comments, 
+                user.followers, 
+                user.following, 
+                user.likes, 
+                user._id
+            );
             next();
         })
         .catch(err => console.log(err));
@@ -56,6 +68,7 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
     res.locals.isAuthenticated = req.session.isLoggedIn;
     res.locals.csrfToken = req.csrfToken();
+    console.log(req.csrfToken());
     next();
 });
 
