@@ -23,6 +23,48 @@ class User {
         return db.collection('users').insertOne(this);
     }
 
+    
+    createPost(post) {
+        const postIndex = this.posts.items.findIndex(p => {
+            return p.postId.toString() === post._id.toString();
+        });
+        let newQuantity = 1;
+        const updatedPostItems = [...this.posts.items];
+
+        if(postIndex >= 0) {
+            newQuantity = this.posts.items[postIndex].quantity + 1;
+            updatedPostItems[postIndex].quantity = newQuantity;
+        } else {
+            updatedPostItems.push({
+                postId: new ObjectId(post._id),
+                quantity: newQuantity
+            });
+        }
+        const updatedPosts = {
+            items: updatedPostItems
+        };
+        const db = getDb();
+        return db
+            .collection('users')
+            .updateOne(
+                { _id: new ObjectId(this._id) },
+                { $set: { posts: updatedPosts } }
+            );
+    }
+
+    deletePost(postId) {
+        const updatedPostItems = this.posts.items.filter(item => {
+            return item.postId.toString() !== postId.toString();
+        });
+        const db = getDb();
+        return db
+            .collection('users')
+            .updateOne(
+                { _id: new ObjectId(this._id) },
+                { $set: { posts: { items: updatedPostItems } } }
+            );
+    }
+
     static findOne(email) {
         const db = getDb();
         return db
@@ -42,7 +84,7 @@ class User {
             .collection('users')
             .findOne({ _id: new ObjectId(userId) })
             .then(user => {
-                console.log(user);
+                // console.log(user);
                 return user;
             })
             .catch(err => {
