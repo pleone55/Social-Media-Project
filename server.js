@@ -68,12 +68,13 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
     res.locals.isAuthenticated = req.session.isLoggedIn;
     res.locals.csrfToken = req.csrfToken();
-    console.log(req.csrfToken());
+    console.log('Res.locals', res.locals.csrfToken);
+    console.log('Csrf Token', req.csrfToken());
     next();
 });
 
 app.use('/', require('./server/routes/auth.routes'));
-app.use('/', require('./server/routes/posts.routes'));
+app.use(require('./server/routes/posts.routes'));
 // app.use('/api/comments', require('./server/routes/comments.routes'));
 
 //Create port
