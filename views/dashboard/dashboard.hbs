@@ -1,0 +1,43 @@
+{{!-- <ul class="main-header__item-list">
+    {{#if !isAuthenticated }}
+        <li class="main-header__item">
+            <a class="{{path === '/login' ? 'active' : '' }}" href="/login">Login</a>
+        </li>
+        <li class="main-header__item">
+            <a class="{{path === '/signup' ? 'active' : '' }}" href="/signup">Signup</a>
+        </li>
+    {{else}}
+        <li class="main-header__item">
+            <form action="/logout" method="post">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                <button type="submit">Logout</button>
+            </form>
+        </li>
+    {{/if}}
+</ul> --}}
+
+<li class="main-header__item">
+    <form action="/logout" method="post">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <button type="submit">Logout</button>
+    </form>
+</li>
+<li class="main-header__item">
+    <a class="active" href="/dashboard/create-post">Create Post
+    </a>
+</li>
+
+<main>
+    <ul>
+        {{#each posts}}
+        <li>
+            <a href="/dashboard/get-post/{{_id}}">{{description}}</a>
+            <form action="/dashboard/delete-post" method="POST">
+                <input type="hidden" name="_csrf" value="{{../csrfToken}}">
+                <input type="hidden" value="{{_id}}" name="postId">
+                <button class="btn danger" type="submit">Delete</button>
+            </form>
+        </li>
+        {{/each}}
+    </ul>
+</main>
