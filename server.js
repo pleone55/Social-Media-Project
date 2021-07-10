@@ -75,7 +75,7 @@ app.use((req, res, next) => {
 
 app.use('/', require('./server/routes/auth.routes'));
 app.use(require('./server/routes/posts.routes'));
-// app.use('/api/comments', require('./server/routes/comments.routes'));
+app.use(require('./server/routes/comments.routes'));
 
 //Create port
 const PORT = process.env.PORT || 7777;

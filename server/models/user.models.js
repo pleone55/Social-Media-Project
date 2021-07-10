@@ -25,21 +25,21 @@ class User {
 
     
     createPost(post) {
-        const postIndex = this.posts.items.findIndex(p => {
-            return p.postId.toString() === post._id.toString();
-        });
-        let newQuantity = 1;
+        // const postIndex = this.posts.items.findIndex(p => {
+        //     return p.postId.toString() === post._id.toString();
+        // });
+        // let newQuantity = 1;
         const updatedPostItems = [...this.posts.items];
 
-        if(postIndex >= 0) {
-            newQuantity = this.posts.items[postIndex].quantity + 1;
-            updatedPostItems[postIndex].quantity = newQuantity;
-        } else {
-            updatedPostItems.push({
-                postId: new ObjectId(post._id),
-                quantity: newQuantity
-            });
-        }
+        // if(postIndex >= 0) {
+        //     newQuantity = this.posts.items[postIndex].quantity + 1;
+        //     updatedPostItems[postIndex].quantity = newQuantity;
+        // } else {
+        updatedPostItems.push({
+            postId: new ObjectId(post._id),
+            description: post.description
+        });
+        // }
         const updatedPosts = {
             items: updatedPostItems
         };
@@ -49,6 +49,27 @@ class User {
             .updateOne(
                 { _id: new ObjectId(this._id) },
                 { $set: { posts: updatedPosts } }
+            );
+    }
+
+    createComment(comment) {
+        const updatedCommentItem = [...this.comments.items];
+
+        updatedCommentItem.push({
+            commentId: new ObjectId(comment._id),
+            comment: comment.commentDesc
+        });
+
+        const updatedComments = {
+            items: updatedCommentItem
+        };
+
+        const db = getDb();
+        return db
+            .collection('users')
+            .updateOne(
+                { _id: new ObjectId(this._id) },
+                { $set: { comments: updatedComments } }
             );
     }
 
@@ -62,6 +83,20 @@ class User {
             .updateOne(
                 { _id: new ObjectId(this._id) },
                 { $set: { posts: { items: updatedPostItems } } }
+            );
+    }
+
+    deleteComment(commentId) {
+        const updatedCommentItems = this.comments.items.filter(item => {
+            return item.commentId.toString() !== commentId.toString();
+        });
+
+        const db = getDb();
+        return db
+            .collection('users')
+            .updateOne(
+                { _id: new ObjectId(this._id) },
+                { $set: { comments: { items: updatedCommentItems } } }
             );
     }
 

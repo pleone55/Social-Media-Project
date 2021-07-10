@@ -1,4 +1,5 @@
 const Post = require('../models/posts.models');
+const Comment = require('../models/comments.models');
 
 exports.getDashboard = (req, res, next) => {
     Post.getAll()
@@ -26,7 +27,8 @@ exports.postCreatePost = (req, res, next) => {
     const { description } = req.body;
     const post = new Post(
         description,
-        req.user._id
+        req.user._id,
+        { items: [] }
     );
     post
         .save()

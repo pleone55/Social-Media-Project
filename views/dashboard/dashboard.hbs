@@ -30,14 +30,15 @@
 <main>
     <ul>
         {{#each posts}}
-        <li>
-            <a href="/dashboard/get-post/{{_id}}">{{description}}</a>
-            <form action="/dashboard/delete-post" method="POST">
-                <input type="hidden" name="_csrf" value="{{../csrfToken}}">
-                <input type="hidden" value="{{_id}}" name="postId">
-                <button class="btn danger" type="submit">Delete</button>
-            </form>
-        </li>
+            <li>
+                <a href="/dashboard/get-post/{{_id}}">{{description}}</a>
+                <form action="/dashboard/delete-post" method="POST">
+                    <input type="hidden" name="_csrf" value="{{../csrfToken}}">
+                    <input type="hidden" value="{{_id}}" name="postId">
+                    <button class="btn danger" type="submit">Delete</button>
+                </form>
+                <a href="/comments/create-comment/{{_id}}">Comment Post</a>
+            </li>
         {{/each}}
     </ul>
 </main>
