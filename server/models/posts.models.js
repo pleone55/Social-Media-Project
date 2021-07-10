@@ -2,15 +2,51 @@ const mongodb = require('mongodb');
 const getDb = require('../../util/database').getDb;
 
 class Posts {
-    constructor(description, userId, id) {
+    constructor(description, userId, comments, id) {
         this.description = description;
         this.userId = userId;
+        this.comments = comments;
         this._id = id ? new mongodb.ObjectId(id) : null;
     }
 
     save() {
         const db = getDb();
         return db.collection('posts').insertOne(this);
+    }
+
+    commentPost(comment) {
+        const updatedPostCommentsItems = [...this.comments.items];
+
+        updatedPostCommentsItems.push({
+            commentId: new mongodb.ObjectId(comment._id),
+            comment: comment.commentDesc
+        });
+
+        const updatedComments = {
+            items: updatedPostCommentsItems
+        };
+
+        const db = getDb();
+        return db
+            .collection('posts')
+            .updateOne(
+                { _id: new mongodb.ObjectId(this._id) },
+                { $set: { comments: updatedComments } }
+            );
+    }
+
+    deleteComment(commentId) {
+        const updatedCommentItems = this.comments.items.filter(item => {
+            return item.commentId.toString() !== commentId.toString();
+        });
+
+        const db = getDb();
+        return db
+            .collection('posts')
+            .updateOne(
+                { _id: new mongodb.ObjectId(this._id) },
+                { $set: { comments: { items: updatedCommentItems } } }
+            );
     }
 
     static getAll() {

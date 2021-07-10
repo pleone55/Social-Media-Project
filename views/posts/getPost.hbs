@@ -1,4 +1,17 @@
 <main>
-    User: {{user.username}} <br/>
-    {{post.description}}
+    <a href="/dashboard">Home</a>
+    <div>
+        User: {{user.username}} <br/>
+        {{post.description}}
+        <ul>
+            {{#each post.comments.items}}
+                <li>{{comment}}</li>
+                <form action="/comments/delete-comment" method="POST">
+                    <input type="hidden" name="_csrf" value="{{../csrfToken}}">
+                    <input type="hidden" value="{{commentId}}" name="commentId">
+                    <button class="btn danger" type="submit">Delete</button>
+                </form>
+            {{/each}}
+        </ul>
+    </div>
 </main>

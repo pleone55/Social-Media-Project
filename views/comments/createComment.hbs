@@ -1,0 +1,12 @@
+<main>
+    <form class="comment-form" action="/comments/create-comment/{{postId}}" method="POST">
+        <div class="form-control">
+            <label for="commentDesc">Comment</label>
+            <input type="text" name="commentDesc" id="commentDesc" value="{{comment.commentDesc}}">
+        </div>
+        <input type="hidden" name="_csrf" value="{{csrfToken}}">
+        <button class="btn" type="submit">Comment</button>
+        <input type="hidden" name="commentId" value="{{comment._id}}">
+        <input type="hidden" name="postId" value="{{postId}}">
+    </form>
+</main>
