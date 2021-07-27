@@ -1,4 +1,7 @@
 <main>
+    {{#if errorMessage }}
+        <div class="user-message user-message--error">{{errorMessage}}</div>
+    {{/if}}
     <form class="post-form" action="/dashboard/create-post" method="POST">
         <div class="form-control">
             <label for="description">Description</label>

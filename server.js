@@ -7,6 +7,7 @@ const MongoDBStore = require('connect-mongodb-session')(session);
 const config = require('config');
 const flash = require('connect-flash');
 const hbs = require('express-handlebars');
+const path = require('path');
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.engine('hbs', hbs({
 }));
 
 app.set('view engine', 'hbs');
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cors());
 app.use(flash());
@@ -66,16 +68,16 @@ app.use((req, res, next) => {
 });
 
 app.use((req, res, next) => {
+    res.locals.user = req.user;
     res.locals.isAuthenticated = req.session.isLoggedIn;
     res.locals.csrfToken = req.csrfToken();
-    console.log('Res.locals', res.locals.csrfToken);
-    console.log('Csrf Token', req.csrfToken());
     next();
 });
 
 app.use('/', require('./server/routes/auth.routes'));
 app.use(require('./server/routes/posts.routes'));
 app.use(require('./server/routes/comments.routes'));
+app.use(require('./server/routes/follow.routes'));
 
 //Create port
 const PORT = process.env.PORT || 7777;

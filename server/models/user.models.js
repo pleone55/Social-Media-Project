@@ -73,6 +73,48 @@ class User {
             );
     }
 
+    followUser(user) {
+        const updatedFollowingItem = [...this.following.items];
+
+        updatedFollowingItem.push({
+            userId: new ObjectId(user._id),
+            username: user.username
+        });
+
+        const updatedFollowing = {
+            items: updatedFollowingItem
+        };
+
+        const db = getDb()
+        return db
+            .collection('users')
+            .updateOne(
+                { _id: new ObjectId(this._id) },
+                { $set: { following: updatedFollowing } }
+            );
+    }
+
+    // userFollowed(user) {
+    //     const updatedFollowersItem = [...this.followers.items];
+
+    //     updatedFollowersItem.push({
+    //         userId: new ObjectId(user._id),
+    //         username: user.username
+    //     });
+
+    //     const updatedFollowers = {
+    //         items: updatedFollowersItem
+    //     };
+
+    //     const db = getDb();
+    //     return db
+    //         .collection('users')
+    //         .updateOne(
+    //             { _id: new ObjectId(this._id) },
+    //             { $set: updatedFollowers }
+    //         );
+    // }
+
     deletePost(postId) {
         const updatedPostItems = this.posts.items.filter(item => {
             return item.postId.toString() !== postId.toString();
@@ -98,6 +140,18 @@ class User {
                 { _id: new ObjectId(this._id) },
                 { $set: { comments: { items: updatedCommentItems } } }
             );
+    }
+
+    static find(user) {
+        const db = getDb();
+        return db
+            .collection('users')
+            .find({ lastName: { $regex: new RegExp(user) } })
+            .toArray()
+            .then(users => {
+                return users;
+            })
+            .catch(err => console.log(err));
     }
 
     static findOne(email) {
