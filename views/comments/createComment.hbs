@@ -1,4 +1,7 @@
 <main>
+    {{#if errorMessage }}
+        <div class="user-message user-message--error">{{errorMessage}}</div>
+    {{/if}}
     <form class="comment-form" action="/comments/create-comment/{{postId}}" method="POST">
         <div class="form-control">
             <label for="commentDesc">Comment</label>

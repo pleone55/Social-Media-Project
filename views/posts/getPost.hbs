@@ -9,6 +9,7 @@
                 <form action="/comments/delete-comment" method="POST">
                     <input type="hidden" name="_csrf" value="{{../csrfToken}}">
                     <input type="hidden" value="{{commentId}}" name="commentId">
+                    <input type="hidden" value="{{postId}}" name="postId">
                     <button class="btn danger" type="submit">Delete</button>
                 </form>
             {{/each}}

@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const getDb = require('../../util/database').getDb;
 
 const User = require('../models/user.models');
 
@@ -107,4 +108,32 @@ exports.postLogout = (req, res, next) => {
         console.log(err);
         res.redirect('/login');
     });
+};
+
+exports.searchUsers = (req, res, next) => {
+    const { user } = req.query;
+
+    User.find(user)
+        .then(users => {
+            res.render('dashboard/searchResults', {
+                users: users,
+                path: '/dashboard/search'
+            });
+        })
+        .catch(err => console.log(err));
+};
+
+exports.getUser = (req, res, next) => {
+    const userId = req.params.userId;
+
+    User.findById(userId)
+        .then(user => {
+            res.render('users/getUser', {
+                user: user,
+                posts: user.posts,
+                pageTitle: user.username,
+                path: '/user'
+            });
+        })
+        .catch(err => console.log(err));
 };

@@ -28,6 +28,18 @@
 </li>
 
 <main>
+    {{#if errorMessage }}
+        <div class="user-message user-message--error">{{errorMessage}}</div>
+    {{/if}}
+    <form action="/dashboard/search" method="GET">
+        <div>
+            <input aria-label="Search" id="search" type="text" name="user" placeholder="Search">
+        </div>
+        <button type="submit">Search</button>
+        <div style="position: relative; width: 100%; top: -1px;">
+            <div class="border" id="search-results"></div>
+        </div>
+    </form>
     <ul>
         {{#each posts}}
             <li>

@@ -49,11 +49,23 @@ class Posts {
             );
     }
 
-    static getAll() {
+    static getAllPosts() {
         const db = getDb();
         return db
             .collection('posts')
             .find()
+            .toArray()
+            .then(posts => {
+                return posts;
+            })
+            .catch(err => console.log(err));
+    }
+
+    static getAllPostsFromUser(userId) {
+        const db = getDb();
+        return db
+            .collection('posts')
+            .find({ userId: userId })
             .toArray()
             .then(posts => {
                 // console.log(posts);
