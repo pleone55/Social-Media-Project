@@ -5,7 +5,7 @@ const mongodb = require('mongodb');
 const getDb = require('../../util/database').getDb;
 
 exports.postFollowUser = (req, res, next) => {
-    const userId = req.params.userId;
+    let userId = req.params.userId;
     User.findById(userId)
         .then(user => {
             const username = user.username;
@@ -28,6 +28,7 @@ exports.postFollowUser = (req, res, next) => {
                                 .catch(err => console.log(err));
                         }
                     } else {
+                        userId = new mongodb.ObjectId(userId);
                         const following = new Following(
                             new mongodb.ObjectId(req.user._id),
                             {

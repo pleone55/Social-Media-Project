@@ -49,11 +49,14 @@ class Posts {
             );
     }
 
-    static getAllPosts() {
+    static getAllPosts(user) {
+        var followingUsers = user.following.items.map(item => {
+            return item.userId
+        });
         const db = getDb();
         return db
             .collection('posts')
-            .find()
+            .find({ userId: { $in: followingUsers }})
             .toArray()
             .then(posts => {
                 return posts;

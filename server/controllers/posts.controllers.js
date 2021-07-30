@@ -1,10 +1,10 @@
 const Post = require('../models/posts.models');
 const User = require('../models/user.models');
+const Following = require('../models/following.models');
 
 exports.getDashboard = (req, res, next) => {
     const userId = req.user._id;
     let postUserId;
-    let followingUserId;
     let message = req.flash('error');
     if(message.length > 0) {
         message = message[0];
@@ -38,27 +38,23 @@ exports.getDashboard = (req, res, next) => {
                         });
                         res.status(200);
                     } else if(postUserId && user.following.items.length > 0) {
-                        Post.getAllPosts()
-                            .then(posts => {
-                                // Map through the users following document to grab the userId associate with the userId from posts collection
-                                user.following.items.map(item => {
-                                    posts = posts.filter(p => 
-                                        p.userId.toString() === item.userId.toString() || 
-                                        p.userId.toString() === userId.toString());
-                                });
-                                // Grab the users posts and their following posts
-                                res.render('dashboard/dashboard', {
-                                    posts: posts,
-                                    pageTitle: 'Dashboard',
-                                    path: '/dashboard',
-                                    errorMessage: message
-                                });
-                                res.status(200);
+                        Following.findOne(userId)
+                            .then(user => {
+                                Post.getAllPosts(user)
+                                    .then(posts => {
+                                        for(let i of userPosts) {
+                                            posts.push(i);
+                                        }
+                                        res.render('dashboard/dashboard', {
+                                            posts: posts,
+                                            pageTitle: 'Dashboard',
+                                            path: '/dashboard',
+                                            errorMessage: message
+                                        });
+                                    })
+                                    .catch(err => console.log(err));
                             })
-                            .catch(err => {
-                                console.log(err);
-                                res.status(400).json({ Error: 'Could not retrieve posts' });
-                            });
+                            .catch(err => console.log(err));
                     }
                 })
                 .catch(err => {
