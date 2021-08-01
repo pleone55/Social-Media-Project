@@ -4,11 +4,17 @@
             <h2>Followers: <a href="/user/{{user._id}}/followers">{{user.followers.items.length}}</a></h2>
         </span>
     <h3 style="display: inline;">{{user.firstName}} {{user.lastName}}</h3><span>
-        <form style="width: 50%; display: inline;" action="/user/follow/{{user._id}}" method="POST">
+        <form style="width: 50%; display: inline;" action="/user/{{user._id}}/follow" method="POST">
             <input type="hidden" name="_csrf" value="{{csrfToken}}">
             <input type="hidden" value="{{user._id}}" name="userId">
             <input type="submit" name="follow" value="Follow">
-        </form>
+        </form><span>
+                <form style="width: 50%; display: inline;" action="/user/{{user._id}}/unfollow" method="POST">
+                <input type="hidden" name="_csrf" value="{{csrfToken}}">
+                <input type="hidden" value="{{user._id}}" name="userId">
+                <input type="submit" name="follow" value="Unfollow">
+            </form>
+        </span>
     </span>
     <ul>
         {{#each posts.items}}

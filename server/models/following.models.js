@@ -34,6 +34,21 @@ class Following {
             );
     }
 
+    
+    unfollowingUser(userId) {
+        const updatedFollowingItems = this.following.items.filter(item => {
+            return item.userId.toString() !== userId.toString();
+        });
+
+        const db = getDb();
+        return db
+            .collection('following')
+            .updateOne(
+                { _id: new mongodb.ObjectId(this._id) },
+                { $set: { following: { items: updatedFollowingItems } } }
+            );
+    }
+
     static findById(followingId) {
         const db = getDb();
         return db
@@ -54,6 +69,17 @@ class Following {
             .findOne({ userId: userId })
             .then(user => {
                 return user;
+            })
+            .catch(err => console.log(err));
+    }
+
+    static deleteById(followingId) {
+        const db = getDb();
+        return db
+            .collection('following')
+            .deleteOne({ _id: new mongodb.ObjectId(followingId) })
+            .then(() => {
+                console.log('User is not following anyone. Document deleted with id ', followingId);
             })
             .catch(err => console.log(err));
     }

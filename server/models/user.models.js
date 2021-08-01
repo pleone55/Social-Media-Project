@@ -94,26 +94,33 @@ class User {
             );
     }
 
-    // userFollowed(user) {
-    //     const updatedFollowersItem = [...this.followers.items];
+    unfollowingUser(userId) {
+        const updatedFollowingItems = this.following.items.filter(item => {
+            return item.userId.toString() !== userId.toString();
+        });
 
-    //     updatedFollowersItem.push({
-    //         userId: new ObjectId(user._id),
-    //         username: user.username
-    //     });
+        const db = getDb();
+        return db
+            .collection('users')
+            .updateOne(
+                { _id: new mongodb.ObjectId(this._id) },
+                { $set: { following: { items: updatedFollowingItems} } }
+            );
+    }
 
-    //     const updatedFollowers = {
-    //         items: updatedFollowersItem
-    //     };
+    unfollowedUser(userId) {
+        const updatedFollowerItems = this.followers.items.filter(item => {
+            return item.userId.toString() !== userId.toString();
+        });
 
-    //     const db = getDb();
-    //     return db
-    //         .collection('users')
-    //         .updateOne(
-    //             { _id: new ObjectId(this._id) },
-    //             { $set: updatedFollowers }
-    //         );
-    // }
+        const db = getDb();
+        return db
+            .collection('users')
+            .updateOne(
+                { _id: new mongodb.ObjectId(this._id) },
+                { $set: { followers: { items: updatedFollowerItems} } }
+            );
+    }
 
     deletePost(postId) {
         const updatedPostItems = this.posts.items.filter(item => {
