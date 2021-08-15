@@ -1,7 +1,8 @@
 const bcrypt = require('bcryptjs');
-const getDb = require('../../util/database').getDb;
-
+const Following = require('../models/following.models');
 const User = require('../models/user.models');
+const Post = require('../models/posts.models');
+const Followers = require('../models/followers.models');
 
 exports.getLogin = (req, res, next) => {
     let message = req.flash('error');
@@ -33,37 +34,44 @@ exports.getSignUp = (req, res, next) => {
 
 exports.postSignup = (req, res, next) => {
     const { firstName, lastName, username, email, password, confirmPassword } = req.body;
-    User.findOne(email)
+    User.findOneEmail(email)
         .then(user => {
             //check if user exists from existing email or username
             if(user) {
                 req.flash('error', 'E-mail already exists. Please use a different email.');
                 return res.redirect('/signup');
             }
-            if(password !== confirmPassword) {
-                req.flash('error', 'Passwords do not match.');
-                return res.redirect('/signup');
-            }
-            return bcrypt
-                .hash(password, 12)
-                .then(hashedPassword => {
-                    const user = new User(
-                        firstName,
-                        lastName,
-                        username,
-                        email,
-                        hashedPassword,
-                        { items: [] },
-                        { items: [] },
-                        { items: [] },
-                        { items: [] },
-                        { items: [] }
-                    );
-                    return user.save();
+            User.findOneUsername(username)
+                .then(userName => {
+                    if(userName) {
+                        req.flash('error', 'Username already exists. Please use a different username.');
+                        return res.redirect('/signup');
+                    }
+                    if(password !== confirmPassword) {
+                        req.flash('error', 'Passwords do not match.');
+                        return res.redirect('/signup');
+                    }
+                    return bcrypt
+                        .hash(password, 12)
+                        .then(hashedPassword => {
+                            const user = new User(
+                                {
+                                    firstName,
+                                    lastName
+                                },
+                                username,
+                                email,
+                                hashedPassword,
+                            );
+                            return user.save();
+                        })
+                        .then(() => {
+                            // console.log(user);
+                            res.redirect('/login');
+                        });
                 })
-                .then(() => {
-                    // console.log(user);
-                    res.redirect('/login');
+                .catch(err => {
+                    console.log(err);
                 });
         })
         .catch(err => {
@@ -73,7 +81,7 @@ exports.postSignup = (req, res, next) => {
 
 exports.postLogin = (req, res, next) => {
     const { email, password } = req.body;
-    User.findOne(email)
+    User.findOneEmail(email)
         .then(user => {
             //Check if user email is valid
             if(!user) {
@@ -112,7 +120,6 @@ exports.postLogout = (req, res, next) => {
 
 exports.searchUsers = (req, res, next) => {
     const { user } = req.query;
-
     User.find(user)
         .then(users => {
             res.render('dashboard/searchResults', {
@@ -124,16 +131,41 @@ exports.searchUsers = (req, res, next) => {
 };
 
 exports.getUser = (req, res, next) => {
+    let message = req.flash('error');
+    if(message.length > 0) {
+        message = message[0];
+    } else {
+        message = null;
+    }
     const userId = req.params.userId;
-
     User.findById(userId)
         .then(user => {
-            res.render('users/getUser', {
-                user: user,
-                posts: user.posts,
-                pageTitle: user.username,
-                path: '/user'
-            });
+            Post.getAllPostsFromUser(user._id)
+                .then(posts => {
+                    Following.findAllFollowing(user._id)
+                        .then(following => {
+                            Followers.findAllFollowers(user._id)
+                                .then(followers => {
+                                    res.render('users/getUser', {
+                                        user: user,
+                                        posts: posts,
+                                        following: following,
+                                        followers: followers,
+                                        path: '/user',
+                                        errorMessage: message
+                                    });
+                                })
+                                .catch(err => {
+                                    res.status(400).json({ Error: 'Could not retrieve followers' });
+                                })
+                        })
+                        .catch(err => {
+                            req.flash('error', 'Could not retrieve following users');
+                        });
+                })
+                .catch(err => {
+                    req.flash('error', 'Could not retrieve posts');
+                });
         })
         .catch(err => console.log(err));
 };

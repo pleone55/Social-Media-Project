@@ -1,71 +1,45 @@
 const Post = require('../models/posts.models');
 const User = require('../models/user.models');
+const Comment = require('../models/comments.models');
+const mongodb = require('mongodb');
 const Following = require('../models/following.models');
 
 exports.getDashboard = (req, res, next) => {
     const userId = req.user._id;
-    let postUserId;
     let message = req.flash('error');
     if(message.length > 0) {
         message = message[0];
     } else {
         message = null;
     }
-    Post.getAllPostsFromUser(userId)
-        .then(userPosts => {
-            // Map through posts collection to grab the userId
-            userPosts.map(p => {
-                postUserId = p.userId;
-            });
-            User.findById(userId)
-                .then(user => {
-                    // If user does not have posts or following anyone render blank page
-                    if(!postUserId) {
+    Following.findAllFollowing(userId)
+        .then(followingDocs => {
+            if(followingDocs.length == 0) {
+                Post.getAllPostsFromUser(userId)
+                    .then(posts => {
                         res.render('dashboard/dashboard', {
-                            posts: null,
+                            posts: posts,
                             pageTitle: 'Dashboard',
                             path: '/dashboard',
                             errorMessage: message
                         });
-                        res.status(200);
-                    // If the user has posts but isnt following anyone
-                    } else if(postUserId && user.following.items.length == 0) {
+                    })
+                    .catch(err => console.log(err));
+            } else {
+                Following.findAllFollowing(userId)
+                    .then(followingDocs => Promise.all(followingDocs.map(item => Post.getAllPostsFromUser(userId, item.followingUser.followingUserId))))
+                    .then(posts => {
                         res.render('dashboard/dashboard', {
-                            posts: userPosts,
+                            posts: posts[0],
                             pageTitle: 'Dashboard',
                             path: '/dashboard',
                             errorMessage: message
                         });
-                        res.status(200);
-                    } else if(postUserId && user.following.items.length > 0) {
-                        Following.findOne(userId)
-                            .then(user => {
-                                Post.getAllPosts(user)
-                                    .then(posts => {
-                                        for(let i of userPosts) {
-                                            posts.push(i);
-                                        }
-                                        res.render('dashboard/dashboard', {
-                                            posts: posts,
-                                            pageTitle: 'Dashboard',
-                                            path: '/dashboard',
-                                            errorMessage: message
-                                        });
-                                    })
-                                    .catch(err => console.log(err));
-                            })
-                            .catch(err => console.log(err));
-                    }
-                })
-                .catch(err => {
-                    console.log(err);
-                    res.status(404).json({ Error: `Could not find user with user id ${user._id}.` });
-                });
+                    })
+                    .catch(err => console.log(err));
+            }
         })
-        .catch(err => {
-            console.log(err);
-            res.status(400).json({ Error: 'Could not load posts' });
-        });
+        .catch(err => console.log(err));
 };
 
 exports.getCreatePost = (req, res, next) => {
@@ -84,26 +58,25 @@ exports.getCreatePost = (req, res, next) => {
 };
 
 exports.postCreatePost = (req, res, next) => {
-    const { description } = req.body;
-    if(description == "" || description == null) {
+    const { post } = req.body;
+    if(post == "" || post == null) {
         req.flash('error', 'Cannot upload a blank post');
         res.redirect('/dashboard/create-post');
     } else {
-        const post = new Post(
-            description,
-            req.user._id,
-            { items: [] }
+        const posts = new Post(
+            post,
+            {
+                userId: req.user._id,
+                username: req.user.username,
+                name: {
+                    firstName: req.user.name.firstName,
+                    lastName: req.user.name.lastName
+                }
+            }
         );
-        post
+        posts
             .save()
             .then(result => {
-                Post.findById(post._id)
-                    .then(post => {
-                        return req.user.createPost(post);
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    });
                 res.status(201);
                 res.redirect('/dashboard');
             })
@@ -115,18 +88,22 @@ exports.postCreatePost = (req, res, next) => {
 };
 
 exports.getPost = (req, res, next) => {
-    const postId = req.params.postId;
+    const postId = new mongodb.ObjectId(req.params.postId);
     Post.findById(postId)
         .then(post => {
-            const userPost = post.userId;
+            const userPost = post.user.userId;
             User.findById(userPost)
                 .then(user => {
-                    res.render('posts/getPost', {
-                        user: user,
-                        post: post,
-                        pageTitle: post.description,
-                        path: '/dashboard/get-post'
-                    });
+                    Comment.getPostsComments(postId)
+                        .then(comments => {
+                            res.render('posts/getPost', {
+                                user: user,
+                                post: post,
+                                comments: comments,
+                                path: '/dashboard/get-post'
+                            });
+                        })
+                        .catch(err => console.log(err));
                 })
                 .catch(err => console.log(err));
         })
@@ -136,26 +113,30 @@ exports.getPost = (req, res, next) => {
 exports.deletePost = (req, res, next) => {
     const postId = req.body.postId;
     const userId = req.user._id;
-    let postUserId;
-    User.findById(userId)
-        .then(user => {
-            user.posts.items.map(p => {
-                postUserId = p.postId;
-            });
-            if(postUserId.toString() === postId.toString()){
-                Post.deleteById(postId)
-                    .then(() => {
-                        console.log('Post deleted');
-                        req.flash('Post deleted');
-                        req.user
-                        .deletePost(postId)
-                            .then(() => {
-                                console.log('Post removed from user');
-                                res.redirect('/dashboard');
-                            })
-                            .catch(err => console.log(err));
-                    })
-                    .catch(err => console.log(err));
+    Post.getAllPostsFromUser(userId)
+        .then(userPost => {
+            if(userPost.length > 0) {
+                const userPostId = userPost.filter(item => {
+                    return item._id.toString() === postId.toString()
+                });
+                if(userPostId) {
+                    if(userId.toString() === userPostId[0].user.userId.toString()) {
+                        Post.deleteById(postId)
+                        .then(() => {
+                            console.log('Post deleted');
+                            req.flash('Post deleted');
+                            return res.redirect('/dashboard');
+                        })
+                        .catch(err => console.log(err));
+                    } else {
+                        console.log('Not Authorized to delete post');
+                        req.flash('error', 'Not Authorized. Cannot delete.');
+                        return res.redirect('/dashboard');
+                    }
+                } else {
+                    res.status(404).json({ Error: 'Could not find post' });
+                    return res.redirect('/dashboard');
+                }
             } else {
                 console.log('Not Authorized to delete post');
                 req.flash('error', 'Not Authorized. Cannot delete.');
@@ -164,6 +145,6 @@ exports.deletePost = (req, res, next) => {
         })
         .catch(err => {
             console.log(err);
-            res.status(404).json({ Error: `Could not find user with user id ${user._id}` });
+            res.status(404).json({ Error: `Could not find post belonging to user id ${user._id}` });
         });
 };

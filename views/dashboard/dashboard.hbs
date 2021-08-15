@@ -28,9 +28,6 @@
 </li>
 
 <main>
-    {{#if errorMessage }}
-        <div class="user-message user-message--error">{{errorMessage}}</div>
-    {{/if}}
     <form action="/dashboard/search" method="GET">
         <div>
             <input aria-label="Search" id="search" type="text" name="user" placeholder="Search">
@@ -41,15 +38,18 @@
         </div>
     </form>
     <ul>
+        {{#if errorMessage }}
+            <div class="user-message user-message--error">{{errorMessage}}</div>
+        {{/if}}
         {{#each posts}}
             <li>
-                <a href="/dashboard/get-post/{{_id}}">{{description}}</a>
+                <span>{{user.username}}</span><br/>
+                <a href="/dashboard/get-post/{{_id}}">{{post}}</a><span> {{ts}}</span>
                 <form action="/dashboard/delete-post" method="POST">
                     <input type="hidden" name="_csrf" value="{{../csrfToken}}">
                     <input type="hidden" value="{{_id}}" name="postId">
                     <button class="btn danger" type="submit">Delete</button>
                 </form>
-                <a href="/comments/create-comment/{{_id}}">Comment Post</a>
             </li>
         {{/each}}
     </ul>

@@ -1,10 +1,12 @@
 const mongodb = require('mongodb');
 const getDb = require('../../util/database').getDb;
+const moment = require('moment');
 
 class Followers {
-    constructor(userId, followers, id) {
-        this.userId = userId;
-        this.followers = followers // { items[] }
+    constructor(user, followerUser, id) {
+        this.user = user;
+        this.followerUser = followerUser;
+        this.ts = moment(new Date()).format('MMM Do YYYY, h:mm:ss a');
         this._id = id;
     }
 
@@ -13,40 +15,40 @@ class Followers {
         return db.collection('followers').insertOne(this);
     }
 
-    updateFollowers(user) {
-        const updatedFollowersItem = [...this.followers.items];
+    // updateFollowers(user) {
+    //     const updatedFollowersItem = [...this.followers.items];
 
-        updatedFollowersItem.push({
-            userId: new mongodb.ObjectId(user._id),
-            username: user.username
-        });
+    //     updatedFollowersItem.push({
+    //         userId: new mongodb.ObjectId(user._id),
+    //         username: user.username
+    //     });
 
-        const updatedFollowers = {
-            items: updatedFollowersItem
-        };
+    //     const updatedFollowers = {
+    //         items: updatedFollowersItem
+    //     };
 
-        const db = getDb();
-        return db
-            .collection('followers')
-            .updateOne(
-                { _id: new mongodb.ObjectId(this._id) },
-                { $set: { followers: updatedFollowers } }
-            );
-    }
+    //     const db = getDb();
+    //     return db
+    //         .collection('followers')
+    //         .updateOne(
+    //             { _id: new mongodb.ObjectId(this._id) },
+    //             { $set: { followers: updatedFollowers } }
+    //         );
+    // }
 
-    unfollowedUser(userId) {
-        const updatedFollowerItems = this.followers.items.filter(item => {
-            return item.userId.toString() !== userId.toString();
-        });
+    // unfollowedUser(userId) {
+    //     const updatedFollowerItems = this.followers.items.filter(item => {
+    //         return item.userId.toString() !== userId.toString();
+    //     });
 
-        const db = getDb();
-        return db
-            .collection('followers')
-            .updateOne(
-                { _id: new mongodb.ObjectId(this._id) },
-                { $set: { followers: { items: updatedFollowerItems} } }
-            );
-    }
+    //     const db = getDb();
+    //     return db
+    //         .collection('followers')
+    //         .updateOne(
+    //             { _id: new mongodb.ObjectId(this._id) },
+    //             { $set: { followers: { items: updatedFollowerItems} } }
+    //         );
+    // }
 
     static findById(followersId) {
         const db = getDb();
@@ -65,9 +67,21 @@ class Followers {
         const db = getDb();
         return db
             .collection('followers')
-            .findOne({ userId: userId })
+            .findOne({ "user.userId": userId })
             .then(user => {
                 return user;
+            })
+            .catch(err => console.log(err));
+    }
+
+    static findAllFollowers(userId) {
+        const db = getDb();
+        return db
+            .collection('followers')
+            .find({ "user.userId": userId })
+            .toArray()
+            .then(followingDocs => {
+                return followingDocs;
             })
             .catch(err => console.log(err));
     }
@@ -78,7 +92,7 @@ class Followers {
             .collection('followers')
             .deleteOne({ _id: new mongodb.ObjectId(followerId) })
             .then(() => {
-                console.log('User is not followed by anyone. Document deleted with id ', followerId);
+                console.log('Document deleted with id ', followerId);
             })
             .catch(err => console.log(err));
     }

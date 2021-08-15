@@ -1,7 +1,7 @@
 <ul>
-    {{#each user}}
-        <li>{{username}}</li>
+    {{#each followers}}
+        <li>{{followUser.username}}</li>
     {{else}}
-        <p>User is not following anyone</p>
+        <p>User is not followed by anyone</p>
     {{/each}}
 </ul>

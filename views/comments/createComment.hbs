@@ -4,8 +4,8 @@
     {{/if}}
     <form class="comment-form" action="/comments/create-comment/{{postId}}" method="POST">
         <div class="form-control">
-            <label for="commentDesc">Comment</label>
-            <input type="text" name="commentDesc" id="commentDesc" value="{{comment.commentDesc}}">
+            <label for="comment">Comment</label>
+            <input type="text" name="comment" id="comment" value="{{comment.comment}}">
         </div>
         <input type="hidden" name="_csrf" value="{{csrfToken}}">
         <button class="btn" type="submit">Comment</button>
