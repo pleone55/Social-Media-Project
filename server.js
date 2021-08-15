@@ -50,16 +50,10 @@ app.use((req, res, next) => {
     User.findById(req.session.user._id)
         .then(user => {
             req.user = new User(
-                user.firstName, 
-                user.lastName, 
+                user.name,
                 user.username, 
                 user.email, 
                 user.password, 
-                user.posts, 
-                user.comments, 
-                user.followers, 
-                user.following, 
-                user.likes, 
                 user._id
             );
             next();

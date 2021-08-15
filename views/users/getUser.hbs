@@ -1,7 +1,8 @@
 <main>
+    <p>{{errorMessage}}</p>
     <h2>{{user.username}}</h2><span>
-        <h2>Following: <a href="/user/{{user._id}}/following">{{user.following.items.length}}</a></h2><span>
-            <h2>Followers: <a href="/user/{{user._id}}/followers">{{user.followers.items.length}}</a></h2>
+        <h2>Following: <a href="/user/{{user._id}}/following">{{following.length}}</a></h2><span>
+            <h2>Followers: <a href="/user/{{user._id}}/followers">{{followers.length}}</a></h2>
         </span>
     <h3 style="display: inline;">{{user.firstName}} {{user.lastName}}</h3><span>
         <form style="width: 50%; display: inline;" action="/user/{{user._id}}/follow" method="POST">
@@ -17,8 +18,8 @@
         </span>
     </span>
     <ul>
-        {{#each posts.items}}
-            <li>{{description}}</li>
+        {{#each posts}}
+            <li>{{post}}</li>
         {{/each}}
     </ul>
 </main>

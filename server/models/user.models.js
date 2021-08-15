@@ -1,20 +1,21 @@
 const mongodb = require('mongodb');
 const getDb = require('../../util/database').getDb;
+const moment = require('moment');
 
 const ObjectId = mongodb.ObjectId;
 
 class User {
-    constructor(firstName, lastName, username, email, password, posts, comments, followers, following, likes, id) {
-        this.firstName = firstName;
-        this.lastName = lastName;
+    constructor(name, username, email, password, id) {
+        this.name = name;
         this.username = username;
         this.email = email;
         this.password = password;
-        this.posts = posts;         // {items: []}
-        this.comments = comments;   // {items: []}
-        this.followers = followers; // {items: []}
-        this.following = following; // {items: []}
-        this.likes = likes;         // {items: []}
+        // this.posts = posts;         // {items: []}
+        // this.comments = comments;   // {items: []}
+        // this.followers = followers; // {items: []}
+        // this.following = following; // {items: []}
+        // this.likes = likes;         // {items: []}
+        this.ts = moment(new Date()).format('MMM Do YYYY, h:mm:ss a');
         this._id = id;
     }
 
@@ -24,136 +25,130 @@ class User {
     }
 
     
-    createPost(post) {
-        // const postIndex = this.posts.items.findIndex(p => {
-        //     return p.postId.toString() === post._id.toString();
-        // });
-        // let newQuantity = 1;
-        const updatedPostItems = [...this.posts.items];
+    // createPost(post) {
+    //     const updatedPostItems = [...this.posts.items];
 
-        // if(postIndex >= 0) {
-        //     newQuantity = this.posts.items[postIndex].quantity + 1;
-        //     updatedPostItems[postIndex].quantity = newQuantity;
-        // } else {
-        updatedPostItems.push({
-            postId: new ObjectId(post._id),
-            description: post.description
-        });
-        // }
-        const updatedPosts = {
-            items: updatedPostItems
-        };
-        const db = getDb();
-        return db
-            .collection('users')
-            .updateOne(
-                { _id: new ObjectId(this._id) },
-                { $set: { posts: updatedPosts } }
-            );
-    }
+    //     updatedPostItems.push({
+    //         postId: new ObjectId(post._id),
+    //         post: post.post,
+    //         ts: post.ts
+    //     });
+    //     // }
+    //     const updatedPosts = {
+    //         items: updatedPostItems
+    //     };
+    //     const db = getDb();
+    //     return db
+    //         .collection('users')
+    //         .updateOne(
+    //             { _id: new ObjectId(this._id) },
+    //             { $set: { posts: updatedPosts } }
+    //         );
+    // }
 
-    createComment(comment) {
-        const updatedCommentItem = [...this.comments.items];
+    // createComment(comment) {
+    //     const updatedCommentItem = [...this.comments.items];
 
-        updatedCommentItem.push({
-            commentId: new ObjectId(comment._id),
-            comment: comment.commentDesc
-        });
+    //     updatedCommentItem.push({
+    //         commentId: new ObjectId(comment._id),
+    //         comment: comment.commentDesc,
+    //         ts: comment.ts
+    //     });
 
-        const updatedComments = {
-            items: updatedCommentItem
-        };
+    //     const updatedComments = {
+    //         items: updatedCommentItem
+    //     };
 
-        const db = getDb();
-        return db
-            .collection('users')
-            .updateOne(
-                { _id: new ObjectId(this._id) },
-                { $set: { comments: updatedComments } }
-            );
-    }
+    //     const db = getDb();
+    //     return db
+    //         .collection('users')
+    //         .updateOne(
+    //             { _id: new ObjectId(this._id) },
+    //             { $set: { comments: updatedComments } }
+    //         );
+    // }
 
-    followUser(user) {
-        const updatedFollowingItem = [...this.following.items];
+    // followUser(user) {
+    //     const updatedFollowingItem = [...this.following.items];
 
-        updatedFollowingItem.push({
-            userId: new ObjectId(user._id),
-            username: user.username
-        });
+    //     updatedFollowingItem.push({
+    //         userId: new ObjectId(user._id),
+    //         username: user.username
+    //     });
 
-        const updatedFollowing = {
-            items: updatedFollowingItem
-        };
+    //     const updatedFollowing = {
+    //         items: updatedFollowingItem
+    //     };
 
-        const db = getDb()
-        return db
-            .collection('users')
-            .updateOne(
-                { _id: new ObjectId(this._id) },
-                { $set: { following: updatedFollowing } }
-            );
-    }
+    //     const db = getDb()
+    //     return db
+    //         .collection('users')
+    //         .updateOne(
+    //             { _id: new ObjectId(this._id) },
+    //             { $set: { following: updatedFollowing } }
+    //         );
+    // }
 
-    unfollowingUser(userId) {
-        const updatedFollowingItems = this.following.items.filter(item => {
-            return item.userId.toString() !== userId.toString();
-        });
+    // unfollowingUser(userId) {
+    //     const updatedFollowingItems = this.following.items.filter(item => {
+    //         return item.userId.toString() !== userId.toString();
+    //     });
 
-        const db = getDb();
-        return db
-            .collection('users')
-            .updateOne(
-                { _id: new mongodb.ObjectId(this._id) },
-                { $set: { following: { items: updatedFollowingItems} } }
-            );
-    }
+    //     const db = getDb();
+    //     return db
+    //         .collection('users')
+    //         .updateOne(
+    //             { _id: new mongodb.ObjectId(this._id) },
+    //             { $set: { following: { items: updatedFollowingItems} } }
+    //         );
+    // }
 
-    unfollowedUser(userId) {
-        const updatedFollowerItems = this.followers.items.filter(item => {
-            return item.userId.toString() !== userId.toString();
-        });
+    // unfollowedUser(userId) {
+    //     const updatedFollowerItems = this.followers.items.filter(item => {
+    //         return item.userId.toString() !== userId.toString();
+    //     });
 
-        const db = getDb();
-        return db
-            .collection('users')
-            .updateOne(
-                { _id: new mongodb.ObjectId(this._id) },
-                { $set: { followers: { items: updatedFollowerItems} } }
-            );
-    }
+    //     const db = getDb();
+    //     return db
+    //         .collection('users')
+    //         .updateOne(
+    //             { _id: new mongodb.ObjectId(this._id) },
+    //             { $set: { followers: { items: updatedFollowerItems} } }
+    //         );
+    // }
 
-    deletePost(postId) {
-        const updatedPostItems = this.posts.items.filter(item => {
-            return item.postId.toString() !== postId.toString();
-        });
-        const db = getDb();
-        return db
-            .collection('users')
-            .updateOne(
-                { _id: new ObjectId(this._id) },
-                { $set: { posts: { items: updatedPostItems } } }
-            );
-    }
+    // deletePost(postId) {
+    //     const updatedPostItems = this.posts.items.filter(item => {
+    //         return item.postId.toString() !== postId.toString();
+    //     });
+    //     const db = getDb();
+    //     return db
+    //         .collection('users')
+    //         .updateOne(
+    //             { _id: new ObjectId(this._id) },
+    //             { $set: { posts: { items: updatedPostItems } } }
+    //         );
+    // }
 
-    deleteComment(commentId) {
-        const updatedCommentItems = this.comments.items.filter(item => {
-            return item.commentId.toString() !== commentId.toString();
-        });
+    // deleteComment(commentId) {
+    //     const updatedCommentItems = this.comments.items.filter(item => {
+    //         return item.commentId.toString() !== commentId.toString();
+    //     });
 
-        const db = getDb();
-        return db
-            .collection('users')
-            .updateOne(
-                { _id: new ObjectId(this._id) },
-                { $set: { comments: { items: updatedCommentItems } } }
-            );
-    }
+    //     const db = getDb();
+    //     return db
+    //         .collection('users')
+    //         .updateOne(
+    //             { _id: new ObjectId(this._id) },
+    //             { $set: { comments: { items: updatedCommentItems } } }
+    //         );
+    // }
 
     static find(user) {
         const db = getDb();
         return db
             .collection('users')
-            .find({ lastName: { $regex: new RegExp(user) } })
+            .find({ "name.lastName": { $regex: new RegExp(user) } })
             .toArray()
             .then(users => {
                 return users;
@@ -161,7 +156,7 @@ class User {
             .catch(err => console.log(err));
     }
 
-    static findOne(email) {
+    static findOneEmail(email) {
         const db = getDb();
         return db
             .collection('users')
@@ -172,6 +167,17 @@ class User {
             .catch(err => {
                 console.log(err);
             });
+    }
+
+    static findOneUsername(username) {
+        const db = getDb();
+        return db
+            .collection('users')
+            .findOne({ username: username })
+            .then(user => {
+                return user;
+            })
+            .catch(err => console.log(err));
     }
 
     static findById(userId) {

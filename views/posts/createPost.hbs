@@ -4,8 +4,8 @@
     {{/if}}
     <form class="post-form" action="/dashboard/create-post" method="POST">
         <div class="form-control">
-            <label for="description">Description</label>
-            <input type="text" name="description" id="description" value="{{post.description}}">
+            <label for="post">Description</label>
+            <input type="text" name="post" id="post" value="{{post.post}}" placeholder="Enter your post">
         </div>
         <input type="hidden" name="_csrf" value="{{csrfToken}}">
         <button class="btn" type="submit">Post</button>

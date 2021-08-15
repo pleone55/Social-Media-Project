@@ -2,14 +2,15 @@
     <a href="/dashboard">Home</a>
     <div>
         User: {{user.username}} <br/>
-        {{post.description}}
+        {{post.post}}<span> {{post.ts}}</span>
+        <a href="/comments/create-comment/{{post._id}}">Comment Post</a>
         <ul>
-            {{#each post.comments.items}}
-                <li>{{comment}}</li>
+            {{#each comments}}
+                <li>{{comment}}</li><span> {{ts}}</span>
                 <form action="/comments/delete-comment" method="POST">
                     <input type="hidden" name="_csrf" value="{{../csrfToken}}">
-                    <input type="hidden" value="{{commentId}}" name="commentId">
-                    <input type="hidden" value="{{postId}}" name="postId">
+                    <input type="hidden" value="{{_id}}" name="commentId">
+                    <input type="hidden" value="{{post.postId}}" name="postId">
                     <button class="btn danger" type="submit">Delete</button>
                 </form>
             {{/each}}
