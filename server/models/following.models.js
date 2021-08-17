@@ -7,7 +7,7 @@ class Following {
         this.user = user;
         this.followingUser = followingUser; // { items: [] }
         this.ts = moment(new Date()).format('MMM Do YYYY, h:mm:ss a');
-        this._id = id;
+        this._id = id ? new mongodb.ObjectId(id) : null;
     }
 
     save() {

@@ -44,7 +44,13 @@
         {{#each posts}}
             <li>
                 <span>{{user.username}}</span><br/>
-                <a href="/dashboard/get-post/{{_id}}">{{post}}</a><span> {{ts}}</span>
+                <a href="/dashboard/get-post/{{_id}}">{{post}}</a><span> {{ts}}</span><span>
+                    <form action="/dashboard/{{_id}}/like-post" method="POST">
+                        <input type="hidden" name="_csrf" value="{{../csrfToken}}"/>
+                        <input type="hidden" name="postId" value="{{_id}}"/>
+                        <button class="btn" type="submit">Like {{likes}}</button>
+                    </form>
+                </span>
                 <form action="/dashboard/delete-post" method="POST">
                     <input type="hidden" name="_csrf" value="{{../csrfToken}}">
                     <input type="hidden" value="{{_id}}" name="postId">
