@@ -3,6 +3,7 @@ const User = require('../models/user.models');
 const Comment = require('../models/comments.models');
 const mongodb = require('mongodb');
 const Following = require('../models/following.models');
+const PostLikes = require('../models/postLikes.models');
 
 exports.getDashboard = (req, res, next) => {
     const userId = req.user._id;
@@ -12,32 +13,44 @@ exports.getDashboard = (req, res, next) => {
     } else {
         message = null;
     }
-    Following.findAllFollowing(userId)
-        .then(followingDocs => {
-            if(followingDocs.length == 0) {
-                Post.getAllPostsFromUser(userId)
-                    .then(posts => {
-                        res.render('dashboard/dashboard', {
-                            posts: posts,
-                            pageTitle: 'Dashboard',
-                            path: '/dashboard',
-                            errorMessage: message
-                        });
-                    })
-                    .catch(err => console.log(err));
-            } else {
-                Following.findAllFollowing(userId)
-                    .then(followingDocs => Promise.all(followingDocs.map(item => Post.getAllPostsFromUser(userId, item.followingUser.followingUserId))))
-                    .then(posts => {
-                        res.render('dashboard/dashboard', {
-                            posts: posts[0],
-                            pageTitle: 'Dashboard',
-                            path: '/dashboard',
-                            errorMessage: message
-                        });
-                    })
-                    .catch(err => console.log(err));
-            }
+    PostLikes.getAllLikes()
+        .then(likes => {
+            Following.findAllFollowing(userId)
+                .then(followingDocs => {
+                    if(followingDocs.length == 0) {
+                        Post.getAllPostsFromUser(userId)
+                            .then(posts => {
+                                // let likedPosts = likes.filter(item => {
+                                //     return posts[0].filter(post => item.postId.toString() === post._id.toString())
+                                // });
+                                res.render('dashboard/dashboard', {
+                                    posts: posts,
+                                    likes: likedPosts.length,
+                                    pageTitle: 'Dashboard',
+                                    path: '/dashboard',
+                                    errorMessage: message
+                                });
+                            })
+                            .catch(err => console.log(err));
+                    } else {
+                        Following.findAllFollowing(userId)
+                            .then(followingDocs => Promise.all(followingDocs.map(item => Post.getAllPostsFromUser(userId, item.followingUser.followingUserId))))
+                            .then(posts => {
+                                // let likedPosts = likes.filter(item => {
+                                //     return posts[0].filter(post => item.postId.toString() === post._id.toString())
+                                // });
+                                res.render('dashboard/dashboard', {
+                                    posts: posts[0],
+                                    likes: likedPosts,
+                                    pageTitle: 'Dashboard',
+                                    path: '/dashboard',
+                                    errorMessage: message
+                                });
+                            })
+                            .catch(err => console.log(err));
+                    }
+                })
+                .catch(err => console.log(err));
         })
         .catch(err => console.log(err));
 };
@@ -111,7 +124,7 @@ exports.getPost = (req, res, next) => {
 };
 
 exports.deletePost = (req, res, next) => {
-    const postId = req.body.postId;
+    let postId = req.body.postId;
     const userId = req.user._id;
     Post.getAllPostsFromUser(userId)
         .then(userPost => {
@@ -125,7 +138,19 @@ exports.deletePost = (req, res, next) => {
                         .then(() => {
                             console.log('Post deleted');
                             req.flash('Post deleted');
-                            return res.redirect('/dashboard');
+                            postId = new mongodb.ObjectId(postId);
+                            PostLikes.findAllPostLikes(postId)
+                                .then(likes => {
+                                    if(likes.length > 0) {
+                                        PostLikes.deleteMany(postId)
+                                            .then(() => {
+                                                console.log('Likes deleted');
+                                                return res.redirect('/dashboard');
+                                            })
+                                            .catch(err => console.log(err));
+                                    }
+                                })
+                                .catch(err => console.log(err));
                         })
                         .catch(err => console.log(err));
                     } else {

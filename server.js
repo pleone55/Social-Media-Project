@@ -72,6 +72,7 @@ app.use('/', require('./server/routes/auth.routes'));
 app.use(require('./server/routes/posts.routes'));
 app.use(require('./server/routes/comments.routes'));
 app.use(require('./server/routes/follow.routes'));
+app.use(require('./server/routes/likes.routes'));
 
 //Create port
 const PORT = process.env.PORT || 7777;
