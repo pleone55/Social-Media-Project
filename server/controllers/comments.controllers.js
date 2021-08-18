@@ -1,5 +1,6 @@
 const Comment = require('../models/comments.models');
 const Post = require('../models/posts.models');
+const CommentLikes = require('../models/commentLikes.models');
 const mongodb = require('mongodb');
 
 exports.getCreateComment = (req, res, next) => {
@@ -57,7 +58,7 @@ exports.postCreateComment = (req, res, next) => {
 };
 
 exports.deleteComment = (req, res, next) => {
-    const commentId = req.body.commentId;
+    let commentId = req.body.commentId;
     const userId = req.user._id;
     const postId = new mongodb.ObjectId(req.body.postId);
     Comment.getPostsComments(postId)
@@ -70,8 +71,21 @@ exports.deleteComment = (req, res, next) => {
                     Comment.deleteById(commentId)
                         .then(() => {
                             console.log('Comment deleted');
-                            req.flash('error', 'Comment deleted');
-                            return res.status(204).redirect(`/dashboard/get-post/${req.body.postId}`);
+                            commentId = new mongodb.ObjectId(commentId);
+                            CommentLikes.findAllCommentLikes(commentId)
+                                .then(likes => {
+                                    if(likes.length > 0) {
+                                        CommentLikes.deleteMany(commentId)
+                                            .then(() => {
+                                                console.log('Likes deleted');
+                                                return res.status(204).redirect(`/dashboard/get-post/${req.body.postId}`);
+                                            })
+                                            .catch(err => console.log('Could not delete likes from comment'));
+                                    } else {
+                                        return res.status(204).redirect(`/dashboard/get-post/${req.body.postId}`);
+                                    }
+                                })
+                                .catch(err => console.log('Could not retrieve comment likes'));
                         })
                         .catch(err => {
                             res.status(404).json({ Error: 'No comment with comment id exists' });
