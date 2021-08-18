@@ -147,6 +147,8 @@ exports.deletePost = (req, res, next) => {
                                                 return res.redirect('/dashboard');
                                             })
                                             .catch(err => console.log(err));
+                                    } else {
+                                        return res.redirect('/dashboard');
                                     }
                                 })
                                 .catch(err => console.log(err));

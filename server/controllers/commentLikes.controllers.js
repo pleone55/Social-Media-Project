@@ -6,11 +6,6 @@ const mongodb = require('mongodb');
 exports.postCommentLikes = (req, res, next) => {
     let { commentId } = req.body;
     let { postId } = req.params;
-    // CommentLikes.findAllCommentLikes(commentId)
-    //     .then(likes => {
-    //         console.log(likes);
-    //     })
-    //     .catch(err => console.log(err));
     Comment.findById(commentId)
         .then(comment => {
             commentId = comment._id;
