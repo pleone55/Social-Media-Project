@@ -35,7 +35,6 @@ class Comments {
             .find({ _id: new mongodb.ObjectId(commentId) })
             .next()
             .then(comment => {
-                console.log(comment);
                 return comment;
             })
             .catch(err => console.log(err));

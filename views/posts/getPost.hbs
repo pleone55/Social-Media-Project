@@ -6,7 +6,13 @@
         <a href="/comments/create-comment/{{post._id}}">Comment Post</a>
         <ul>
             {{#each comments}}
-                <li>{{comment}}</li><span> {{ts}}</span>
+                <li>{{comment}}</li><span> {{ts}}</span><span>
+                    <form action="/dashboard/get-post/{{post.postId}}/like-comment/{{_id}}" method="POST">
+                        <input type="hidden" name="_csrf" value="{{../csrfToken}}"/>
+                        <input type="hidden" value="{{_id}}" name="commentId"/>
+                        <button type="submit">Like</button>
+                    </form>
+                </span>
                 <form action="/comments/delete-comment" method="POST">
                     <input type="hidden" name="_csrf" value="{{../csrfToken}}">
                     <input type="hidden" value="{{_id}}" name="commentId">
