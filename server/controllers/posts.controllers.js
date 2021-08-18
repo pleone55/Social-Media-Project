@@ -41,7 +41,6 @@ exports.getDashboard = (req, res, next) => {
                                 // });
                                 res.render('dashboard/dashboard', {
                                     posts: posts[0],
-                                    likes: likedPosts,
                                     pageTitle: 'Dashboard',
                                     path: '/dashboard',
                                     errorMessage: message
