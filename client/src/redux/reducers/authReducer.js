@@ -10,7 +10,15 @@ import {
     LOGOUT
 } from '../types';
 
-export default (state, action) => {
+const initialState = {
+    token: localStorage.getItem('token'),
+    isAuthenticated: null,
+    user: null,
+    loading: true,
+    error: null
+};
+
+export default(state = initialState, action) => {
     switch(action.type) {
         case REGISTER_SUCCESS:
             localStorage.setItem('token', action.payload.token);
@@ -21,28 +29,6 @@ export default (state, action) => {
                 loading: false
             }
         case REGISTER_FAIL:
-            localStorage.removeItem('token');
-            return {
-                ...state,
-                token: null,
-                isAuthenticated: false,
-                loading: false,
-                user: null,
-                error: action.payload
-            }
-        case CLEAR_ERRORS:
-            return {
-                ...state,
-                error: null
-            }
-        case USER_LOADED:
-            return {
-                ...state,
-                isAuthenticated: true,
-                loading: false,
-                user: action.payload
-            }
-        case AUTH_ERROR:
             localStorage.removeItem('token');
             return {
                 ...state,
@@ -79,6 +65,28 @@ export default (state, action) => {
                 loading: true,
                 user: null,
                 error: action.payload
+            }
+        case AUTH_ERROR:
+            localStorage.removeItem('token');
+            return {
+                ...state,
+                token: null,
+                isAuthenticated: false,
+                loading: false,
+                user: null,
+                error: action.payload
+            }
+        case USER_LOADED:
+            return {
+                ...state,
+                isAuthenticated: true,
+                loading: false,
+                user: action.payload
+            }
+        case CLEAR_ERRORS:
+            return {
+                ...state,
+                error: null
             }
         default:
             return state;
