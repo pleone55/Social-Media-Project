@@ -1,17 +1,18 @@
 import React, { useState, useContext, useEffect } from 'react';
-import authContext from '../../context/Auth/AuthContext';
 import AlertContext from '../../context/alert/AlertContext';
 
+import { connect } from 'react-redux';
+import { registerUser, clearErrors } from '../../redux/actions/Auth/authActions';
+
 const Register = props => {
-    const AuthContext = useContext(authContext);
-    const { registerUser, error, clearErrors, isAuthenticated } = AuthContext;
+    const { auth: { isAuthenticated, error }, registerUser, clearErrors } = props;
 
     const alertContext = useContext(AlertContext);
     const { setAlert } = alertContext;
 
     useEffect(() => {
         if(isAuthenticated) {
-            props.history.push('/login');
+            props.history.push('/dashboard');
         }
         if(error) {
             setAlert(error, 'danger');
@@ -22,13 +23,13 @@ const Register = props => {
 
     const [user, setUser] = useState({
         name: {
-            firstName: '',
-            lastName: ''
+            firstName: null,
+            lastName: null
         },
-        username: '',
-        email: '',
-        password: '',
-        confirmPassword: ''
+        username: null,
+        email: null,
+        password: null,
+        confirmPassword: null
     });
 
     const { firstName, lastName, username, email, password, confirmPassword } = user;
@@ -85,6 +86,12 @@ const Register = props => {
             </form>
         </div>
     )
+};
+
+const mapStateToProps = state => {
+    return {
+        auth: state.auth
+    }
 }
 
-export default Register;
+export default connect(mapStateToProps, { registerUser, clearErrors })(Register);

@@ -1,11 +1,11 @@
 import React, { useState, useContext, useEffect } from 'react';
-import authContext from '../../context/Auth/AuthContext';
 import AlertContext from '../../context/alert/AlertContext';
 
-const Login = props => {
-    const AuthContext = useContext(authContext);
-    const { loginUser, error, clearErrors, isAuthenticated } = AuthContext;
+import { connect } from 'react-redux';
+import { loginUser, clearErrors } from '../../redux/actions/Auth/authActions';
 
+const Login = props => {
+    const { auth: { isAuthenticated, error }, loginUser, clearErrors } = props;
     const alertContext = useContext(AlertContext);
     const { setAlert } = alertContext;
 
@@ -62,6 +62,12 @@ const Login = props => {
             </form>
         </div>
     )
+};
+
+const mapStateToProps = state => {
+    return {
+        auth: state.auth
+    }
 }
 
-export default Login;
+export default connect(mapStateToProps, { loginUser, clearErrors })(Login);
