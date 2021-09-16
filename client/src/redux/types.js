@@ -16,3 +16,5 @@ export const CREATE_POST = 'CREATE_POST';
 export const SET_CURRENT = 'SET_CURRENT';
 export const CLEAR_CURRENT = 'CLEAR_CURRENT';
 export const CLEAR_POSTS = 'CLEAR_POSTS';
+export const GET_POST = 'GET_POST';
+export const DELETE_POST = 'DELETE_POST';

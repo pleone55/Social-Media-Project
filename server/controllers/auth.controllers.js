@@ -3,34 +3,41 @@ const Following = require('../models/following.models');
 const User = require('../models/user.models');
 const Post = require('../models/posts.models');
 const Followers = require('../models/followers.models');
+const redis = require('redis');
+const jwt = require('jsonwebtoken');
+const config = require('config');
 
-exports.getLogin = (req, res, next) => {
-    let message = req.flash('error');
-    if(message.length > 0) {
-        message = message[0];
-    } else {
-        message = null;
-    }
-    res.render('auth/login', {
-        path: '/login',
-        pageTitle: 'Login',
-        errorMessage: message
-    });
-};
+const REDIS_PORT = process.env.PORT || 6379;
 
-exports.getSignUp = (req, res, next) => {
-    let message = req.flash('error');
-    if(message.length > 0) {
-        message = message[0];
-    } else {
-        message = null;
-    }
-    res.render('auth/signup', {
-        path: '/signup',
-        pageTitle: 'Signup',
-        errorMessage: message
-    });
-};
+const client = redis.createClient(REDIS_PORT);
+
+// exports.getLogin = (req, res, next) => {
+//     let message = req.flash('error');
+//     if(message.length > 0) {
+//         message = message[0];
+//     } else {
+//         message = null;
+//     }
+//     res.render('auth/login', {
+//         path: '/login',
+//         pageTitle: 'Login',
+//         errorMessage: message
+//     });
+// };
+
+// exports.getSignUp = (req, res, next) => {
+//     let message = req.flash('error');
+//     if(message.length > 0) {
+//         message = message[0];
+//     } else {
+//         message = null;
+//     }
+//     res.render('auth/signup', {
+//         path: '/signup',
+//         pageTitle: 'Signup',
+//         errorMessage: message
+//     });
+// };
 
 exports.postSignup = (req, res, next) => {
     const { firstName, lastName, username, email, password, confirmPassword } = req.body;
@@ -38,18 +45,22 @@ exports.postSignup = (req, res, next) => {
         .then(user => {
             //check if user exists from existing email or username
             if(user) {
-                req.flash('error', 'E-mail already exists. Please use a different email.');
-                return res.redirect('/signup');
+                return res.status(400).json({ msg: `User with email ${email} already exists` });
+                // req.flash('error', 'E-mail already exists. Please use a different email.');
+                // return res.redirect('/signup');
             }
             User.findOneUsername(username)
                 .then(userName => {
                     if(userName) {
-                        req.flash('error', 'Username already exists. Please use a different username.');
-                        return res.redirect('/signup');
+                        return res.status(400).json({ msg: `User with username ${username} already exists.` });
+                        // req.flash('error', 'Username already exists. Please use a different username.');
+                        // return res.redirect('/signup');
                     }
                     if(password !== confirmPassword) {
                         req.flash('error', 'Passwords do not match.');
-                        return res.redirect('/signup');
+                    }
+                    if(password.length < 6) {
+                        return res.status(401).json({ msg: 'Password length must be greater than 6 characters' });
                     }
                     return bcrypt
                         .hash(password, 12)
@@ -63,30 +74,44 @@ exports.postSignup = (req, res, next) => {
                                 email,
                                 hashedPassword,
                             );
-                            return user.save();
+                            const payload = {
+                                user: {
+                                    id: user._id
+                                }
+                            };
+                            const jwtSecret = config.get('jwtSecret');
+                            jwt.sign(payload, jwtSecret, {
+                                expiresIn: 360000
+                            }, (err, token) => {
+                                if(err) throw err;
+                                res.json({ token });
+                            });
+                            user.save();
                         })
-                        .then(() => {
-                            // console.log(user);
-                            res.redirect('/login');
-                        });
+                        // .then(() => {
+                        //     res.redirect('/login');
+                        // });
                 })
                 .catch(err => {
-                    console.log(err);
+                    console.log(err.message);
+                    return res.status(500).send('Server Error');
                 });
         })
         .catch(err => {
             console.log(err);
+            return res.status(500).send('Server Error');
         });
 };
 
 exports.postLogin = (req, res, next) => {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+    email = email.toString();
+    password = password.toString();
     User.findOneEmail(email)
         .then(user => {
-            //Check if user email is valid
+            // Check if user email is valid
             if(!user) {
-                req.flash('error', 'Invalid email or password.');
-                return res.redirect('/login');
+                res.status(404).json({  msg: 'User not found' });
             }
             //check if password matches
             bcrypt
@@ -95,17 +120,28 @@ exports.postLogin = (req, res, next) => {
                         if(matches) {
                             req.session.isLoggedIn = true;
                             req.session.user = user;
-                            return req.session.save(err => {
+                            req.session.save(err => {
                                 console.log(err);
-                                res.redirect('/dashboard');
                             });
+                            const payload = {
+                                user: {
+                                    id: user._id
+                                }
+                            };
+                            const jwtSecret = config.get('jwtSecret');
+                            jwt.sign(payload, jwtSecret, {
+                                expiresIn: 360000
+                            }, (err, token) => {
+                                if(err) throw err;
+                                res.json({ token });
+                            });
+                        } else {
+                            return res.status(400).json({ msg: 'Invalid credentials' });
                         }
-                        req.flash('error', 'Invalid email or password.');
-                        res.redirect('/login');
                     })
                     .catch(err => {
                         console.log(err);
-                        res.redirect('/login');
+                        res.status(400).json({ msg: 'Invalid email or password.' });
                     });
         })
         .catch(err => console.log(err));
@@ -114,8 +150,18 @@ exports.postLogin = (req, res, next) => {
 exports.postLogout = (req, res, next) => {
     req.session.destroy(err => {
         console.log(err);
-        res.redirect('/login');
+        res.status(201).end();
     });
+};
+
+exports.getUserById = (req, res, next) => {
+    User.findById(req.user.id)
+        .then(user => {
+            res.json(user);
+        })
+        .catch(err => {
+            res.status(404).json({ msg: 'Could not retrieve user' });
+        });
 };
 
 exports.searchUsers = (req, res, next) => {
@@ -137,7 +183,7 @@ exports.getUser = (req, res, next) => {
     } else {
         message = null;
     }
-    const userId = req.params.userId;
+    const { userId } = req.params;
     User.findById(userId)
         .then(user => {
             Post.getAllPostsFromUser(user._id)
@@ -146,11 +192,18 @@ exports.getUser = (req, res, next) => {
                         .then(following => {
                             Followers.findAllFollowers(user._id)
                                 .then(followers => {
+                                    let redisObj = {
+                                        following: following.length,
+                                        followers: followers.length,
+                                        posts: posts
+                                    };
+                                    let key = `${user.username}_info`;
+                                    client.setex(key, 15, JSON.stringify(redisObj));
                                     res.render('users/getUser', {
                                         user: user,
                                         posts: posts,
-                                        following: following,
-                                        followers: followers,
+                                        following: following.length,
+                                        followers: followers.length,
                                         path: '/user',
                                         errorMessage: message
                                     });

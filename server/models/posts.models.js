@@ -83,20 +83,40 @@ class Posts {
             });
     }
 
-    static getAllPosts() {
+    static getUserPosts(userId) {
         const db = getDb();
         return db
             .collection('posts')
-            .find()
+            .find({ "user.userId": userId })
             .toArray()
             .then(posts => {
-                // console.log(posts);
                 return posts;
             })
             .catch(err => {
                 console.log(err);
             });
     }
+
+    // const key = `${userId}_posts`;
+    // client.get(key, (err, data) => {
+    //     if(err) throw err;
+    //     else if(data) {
+    //         return JSON.parse(data);
+    //     } else {
+    //         const db = getDb();
+    //         return db
+    //             .collection('posts')
+    //             .find({ "user.userId": userId })
+    //             .toArray()
+    //             .then(posts => {
+    //                 client.setex(key, 60, JSON.stringify(posts));
+    //                 return posts;
+    //             })
+    //             .catch(err => {
+    //                 console.log(err);
+    //             });
+    //     }
+    // })
 
     static findById(postId) {
         const db = getDb();

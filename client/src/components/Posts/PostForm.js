@@ -19,8 +19,6 @@ const PostForm = ({ current, createPost, clearCurrent }) => {
     //         });
     //     }
     // }, [current]);
-    
-    const onChange = event => setNewPost({ ...post, [event.target.name]: event.target.value });
 
     const onSubmit = event => {
         event.preventDefault();
