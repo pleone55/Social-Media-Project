@@ -14,6 +14,7 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor} from './store';
 import Navbar from './components/layouts/Navbar';
+import GetPost from './components/Posts/GetPost';
 
 if(localStorage.token) {
   setAuthToken(localStorage.token);
@@ -31,6 +32,7 @@ function App() {
                   <Alerts />
                   <Switch>
                     <PrivateRoute exact path='/dashboard' component={Dashboard} />
+                    <PrivateRoute exact path='/dashboard/posts/:postId' component={GetPost} />
                     <Route exact path='/register' component={Register} />
                     <Route exact path='/login' component={Login} />
                   </Switch>

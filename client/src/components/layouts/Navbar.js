@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { logout, loadUser } from '../../redux/actions/Auth/authActions';
 import { clearPosts } from '../../redux/actions/Posts/postActions';
 
-const Navbar = ({ title, isAuthenticated, logout, user, loadUser, clearPosts }) => {
+const Navbar = ({ title, isAuthenticated, logout, user, loadUser, clearPosts, history }) => {
     useEffect(() => {
         loadUser();
         //eslint-disable-next-line
@@ -20,6 +20,7 @@ const Navbar = ({ title, isAuthenticated, logout, user, loadUser, clearPosts }) 
         <>
             <li>Welcome {user && user.username}</li>
             <li>
+                <a href="/dashboard">Home</a>{' '}
                 <a onClick={onLogout} href="#!"><i className="fas fa-sign-out-alt"></i><span className="hide-sm">Logout</span></a>
             </li>
         </>

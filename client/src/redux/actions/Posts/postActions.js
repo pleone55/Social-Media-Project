@@ -6,7 +6,9 @@ import {
     CREATE_POST,
     SET_CURRENT,
     CLEAR_CURRENT,
-    CLEAR_POSTS
+    CLEAR_POSTS,
+    GET_POST,
+    DELETE_POST
 } from '../../types';
 
 const localHost = 'http://localhost:7777';
@@ -48,6 +50,48 @@ export const createPost = post => async dispatch => {
         console.log(res.data)
         dispatch({
             type: CREATE_POST,
+            payload: res.data
+        });
+
+    } catch (err) {
+        dispatch({
+            type: POSTS_ERROR,
+            payload: err.response.data
+        });
+    }
+};
+
+// Get Post
+export const getPost = postId => async dispatch => {
+    try {
+        setLoading();
+
+        const res = await axios.get(`${localHost}/api/dashboard/get-post/${postId}`);
+
+        dispatch({
+            type: GET_POST,
+            payload: res.data
+        });
+
+        console.log(res.data);
+
+    } catch (err) {
+        dispatch({
+            type: POSTS_ERROR,
+            payload: err.response.data
+        });
+    }
+};
+
+// Delete Post
+export const deletePost = postId => async dispatch => {
+    try {
+        setLoading();
+
+        const res = await axios.delete(`${localHost}/api/dashboard/delete-post/${postId}`, { data: postId });
+
+        dispatch({
+            type: DELETE_POST,
             payload: res.data
         });
 

@@ -2,7 +2,6 @@ const Following = require('../models/following.models');
 const Followers = require('../models/followers.models');
 const User = require('../models/user.models');
 const mongodb = require('mongodb');
-const getDb = require('../../util/database').getDb;
 
 exports.postFollowUser = (req, res, next) => {
     let userId = new mongodb.ObjectId(req.params.userId);

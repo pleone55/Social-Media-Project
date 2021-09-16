@@ -41,7 +41,7 @@ app.use(
         store: store
     })
 );
-app.use(csrf());
+// app.use(csrf());
 
 app.use((req, res, next) => {
     if(!req.session.user) {
@@ -64,11 +64,11 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
     res.locals.user = req.user;
     res.locals.isAuthenticated = req.session.isLoggedIn;
-    res.locals.csrfToken = req.csrfToken();
+    // res.locals.csrfToken = req.csrfToken();
     next();
 });
 
-app.use('/', require('./server/routes/auth.routes'));
+app.use('/api', require('./server/routes/auth.routes'));
 app.use(require('./server/routes/posts.routes'));
 app.use(require('./server/routes/comments.routes'));
 app.use(require('./server/routes/follow.routes'));
@@ -76,6 +76,7 @@ app.use(require('./server/routes/likes.routes'));
 
 //Create port
 const PORT = process.env.PORT || 7777;
+// const REDIS_PORT = process.env.PORT || 6379;
 
 mongoConnect(() => { 
     app.listen(PORT, () => {
